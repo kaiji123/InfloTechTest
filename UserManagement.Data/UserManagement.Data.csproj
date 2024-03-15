@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>  <UserSecretsId>54132d09-0a56-4783-b800-832aecf2ed74</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.0" />
+  </ItemGroup>
+</Project>

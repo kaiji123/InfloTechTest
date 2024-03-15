@@ -1,0 +1,95 @@
+@page "/logs"
+@using UserManagement.Client.Models
+@using System.Net.Http.Json
+@inject HttpClient HttpClient
+
+<h2>Log List</h2>
+<div>
+
+    <input type="text" class="form-control" @bind="@SearchString" placeholder="Search" />
+    <br/>
+
+    <button class="btn btn-danger" @onclick="FilterLogs">Search Logs</button>
+</div>
+
+
+@* Filtered logs *@
+
+@if (FilteredLogs != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>User Id</th>
+                <th>Action</th>
+                <th>Timestamp</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in FilteredLogs)
+            {
+                <tr>
+                    <td>@log.Id</td>
+                    <td>@log.UserId</td>
+                    <td>@log.Action</td>
+                    <td>@log.Timestamp</td>
+                    <td><a href="logs/details/@log.Id">Details</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    private List<LogItemViewModel>? Logs;
+    private List<LogItemViewModel>? FilteredLogs;
+    private string? SearchString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLogs();
+    }
+
+    private async Task LoadLogs()
+    {
+        // Load logs from the server
+        // For demonstration, let's assume Logs are loaded from somewhere
+        var response = await HttpClient.GetAsync("logs");
+        if (response.IsSuccessStatusCode)
+        {
+            Logs = await response.Content.ReadFromJsonAsync<List<LogItemViewModel>>();
+        }
+        else
+        {
+            Logs = new List<LogItemViewModel>();
+            FilteredLogs =new List<LogItemViewModel>();
+        }
+        FilteredLogs = Logs;
+    }
+
+    private void FilterLogs()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchString))
+        {
+            if (Logs != null){
+                FilteredLogs = Logs.Where(log =>
+                log.Action.Contains(SearchString, StringComparison.OrdinalIgnoreCase) ||
+                log.Timestamp.ToString().Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+            }
+            // Perform client-side filtering based on the search string
+      
+        }
+        else
+        {
+            // Reset the filter and show all logs
+            FilteredLogs = Logs;
+        }
+    }
+}

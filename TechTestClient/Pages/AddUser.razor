@@ -1,0 +1,89 @@
+@page "/users/add"
+@using UserManagement.Client.Models
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject ILogger<AddUser> Logger
+
+<h2>Add User</h2>
+@if (!string.IsNullOrEmpty(submitError))
+{
+    <div class="alert alert-danger" role="alert">
+        @submitError
+    </div>
+}
+
+@* User form to Add, note that we can potentially make this form as a reusable component *@
+<EditForm Model="@user" OnValidSubmit="@SubmitForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="forename" class="control-label">Forename:</label>
+        <InputText id="forename" class="form-control" @bind-Value="user.Forename" />
+        <ValidationMessage For="@(() => user.Forename)" class="text-danger" />
+    </div>
+    
+    <div class="form-group">
+        <label for="surname" class="control-label">Surname:</label>
+        <InputText id="surname" class="form-control" @bind-Value="user.Surname" />
+        <ValidationMessage For="@(() => user.Surname)" class="text-danger" />
+    </div>
+    
+    <div class="form-group">
+        <label for="email" class="control-label">Email:</label>
+        <InputText id="email" type="email" class="form-control" @bind-Value="user.Email" />
+        <ValidationMessage For="@(() => user.Email)" class="text-danger" />
+    </div>
+    
+    <div class="form-group">
+        <div class="form-check">
+            <InputCheckbox class="form-check-input" @bind-Value="user.IsActive" />
+            <label class="form-check-label" for="isActive">Active</label>
+        </div>
+        <ValidationMessage For="@(() => user.IsActive)" class="text-danger" />
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Add</button>
+    <button type="button" class="btn btn-default" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    private UserListItemViewModel user = new UserListItemViewModel
+    {
+    // we can assign id here and not worry about it since the controller will take other fields
+    Id = 0,
+    Forename = "",
+    Surname = "",
+    Email = "",
+    IsActive = true
+    };
+
+    private string? submitError; // Remove this field if not used
+
+    private async Task SubmitForm()
+    {
+        try
+        {
+            // Post user data to the controller action
+            var response = await HttpClient.PostAsJsonAsync("/users/add", user);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/users/list");
+            }
+            else
+            {
+                submitError = "An error occurred while saving the data. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An unexpected error occurred while adding the user.");
+            submitError = "An unexpected error occurred. Please try again later.";
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/users/list");
+    }
+}

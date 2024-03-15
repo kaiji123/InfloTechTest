@@ -1,0 +1,91 @@
+@page "/users/edit/{Id}"
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@using UserManagement.Client.Models
+@using UserManagement.Models
+@using System.Text.Json;
+@if (SubmitError != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @SubmitError
+    </div>
+}
+
+@if (User != null)
+{
+    <EditForm Model="@User" OnValidSubmit="@SubmitForm">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="forename">Forename:</label>
+            <InputText class="form-control" id="forename" @bind-Value="User.Forename" />
+            <ValidationMessage For="@(() => User.Forename)" />
+        </div>
+        <div class="form-group">
+            <label for="surname">Surname:</label>
+            <InputText class="form-control" id="surname" @bind-Value="User.Surname" />
+            <ValidationMessage For="@(() => User.Surname)" />
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <InputText type="email" class="form-control" id="email" @bind-Value="User.Email" />
+            <ValidationMessage For="@(() => User.Email)" />
+        </div>
+        <div class="form-group">
+            <label for="isActive">Is Active:</label>
+            <InputCheckbox class="form-check-input" id="isActive" @bind-Value="User.IsActive" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+    </EditForm>
+}
+else
+{
+    <p>User not found.</p>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private UserListItemViewModel? User;
+    private string? SubmitError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await HttpClient.GetFromJsonAsync<UserListItemViewModel>($"users/edit/{Id}");
+        if (response != null)
+        {
+            User = response;
+        }
+        else
+        {
+            Navigation.NavigateTo("/users/list");
+        }
+    }
+
+    private async Task SubmitForm()
+    {
+        if (User != null)
+        {
+
+            try
+            {
+                @* fetch the user *@
+                var response = await HttpClient.PostAsJsonAsync($"users/edit/{Id}", User);
+                if (response.IsSuccessStatusCode)
+                {
+                    Navigation.NavigateTo("/users/list");
+                }
+                else
+                {
+                    SubmitError = "An error occurred while saving the data. Please try again.";
+                }
+            }
+            catch (Exception ex)
+            {
+                SubmitError = $"An unexpected error occurred: {ex.Message}";
+            }
+        }
+    }
+}

@@ -1,0 +1,34 @@
+@model List<UserManagement.Web.Models.Users.LogItemViewModel>
+
+<h2>List of Logs</h2>
+
+<form method="get" action="/logs">
+    <div class="form-group">
+        <label for="searchString">Search:</label>
+        <input type="text" id="searchString" name="searchString" class="form-control" />
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Action</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td><a asp-controller="Logs" asp-action="Details" asp-route-id="@log.Id">@log.Id</a></td>
+                <td>@log.UserId</td>
+                <td>@log.Action</td>
+                <td>@log.Timestamp</td>
+            </tr>
+        }
+    </tbody>
+</table>

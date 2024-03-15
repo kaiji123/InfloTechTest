@@ -1,0 +1,71 @@
+@page "/logs/details/{Id}"
+@inject HttpClient HttpClient
+@using UserManagement.Client.Models
+
+@using System.Text.Json
+<h2>Log Details</h2>
+
+@* Log details *@
+
+@if (Log != null)
+{
+    <dl class="row">
+        <dt class="col-sm-2">Id:</dt>
+        <dd class="col-sm-10">@Log.Id</dd>
+
+        <dt class="col-sm-2">User Id:</dt>
+        <dd class="col-sm-10">@Log.UserId</dd>
+
+        <dt class="col-sm-2">Action:</dt>
+        <dd class="col-sm-10">@Log.Action</dd>
+
+        <dt class="col-sm-2">Timestamp:</dt>
+        <dd class="col-sm-10">@Log.Timestamp</dd>
+
+        <dt class="col-sm-2">Source:</dt>
+        <dd class="col-sm-10">@Log.Source</dd>
+
+        <dt class="col-sm-2">Payload:</dt>
+        <dd class="col-sm-10">@Log.Payload</dd>
+    </dl>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; } // Ensure that the parameter type is string
+
+    private LogItemViewModel? Log;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine(Id);
+        await LoadLog();
+    }
+
+    private async Task LoadLog()
+    {
+        try
+        {
+        var response = await HttpClient.GetAsync($"logs/details/{Id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var logJson = await response.Content.ReadAsStringAsync();
+                Log = JsonSerializer.Deserialize<LogItemViewModel>(logJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            else
+            {
+                // Handle error if user is not found or request fails
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            // Log or handle the exception
+            Console.WriteLine($"Error loading log: {ex.Message}");
+        }
+    }
+}

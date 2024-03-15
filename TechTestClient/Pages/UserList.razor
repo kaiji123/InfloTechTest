@@ -1,0 +1,155 @@
+﻿@page "/users/list"
+@using UserManagement.Models
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.Collections.Generic
+@inject NavigationManager Navigation
+
+
+<h2>User List</h2>
+@* Active buttons *@
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="FilterActive">Active Users</button>
+    <button class="btn btn-danger" @onclick="FilterNonActive">Non-Active Users</button>
+</div>
+
+@* Add user Button *@
+<button class="btn btn-primary" @onclick="AddUser">Add User</button> 
+
+
+@* User List *@
+@if (Users != null && Users.Any())
+{
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Forename</th>
+                    <th>Surname</th>
+                    <th>Email</th>
+                    <th>Account Active</th>
+                    <th style="width: 1px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in DisplayedUsers ?? Enumerable.Empty<User>())
+                {
+                    <tr>
+                        <td>@user.Id</td>
+                        <td>@user.Forename</td>
+                        <td>@user.Surname</td>
+                        <td>@user.Email</td>
+                        <td>@(user.IsActive ? "Yes" : "No")</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" @onclick="() => ToggleDropdown(user.Id)">
+                                    Actions
+                                </button>
+                                @if (IsDropdownOpen.ContainsKey(user.Id) && IsDropdownOpen[user.Id])
+                                {
+                                    <ul class="dropdown-menu show" @onclick:preventDefault>
+                                        <li><button class="dropdown-item" @onclick="() => ViewUser(user.Id)">View</button></li>
+                                        <li><button class="dropdown-item" @onclick="() => EditUser(user.Id)">Edit</button></li>
+                                        <li><button class="dropdown-item" @onclick="() => DeleteUser(user.Id)">Delete</button></li>
+                                    </ul>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    private List<User>? Users;
+    private List<User>? DisplayedUsers = new List<User>(); // List to display filtered users
+
+    [Inject]
+    private HttpClient? Http { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Http != null)
+        {
+            var response = await Http.GetAsync("users"); // Replace "your-api-endpoint" with the actual API endpoint
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var result = JsonSerializer.Deserialize<UserListData>(jsonString, options);
+                Users = result?.Items;
+                DisplayedUsers = Users ?? new List<User>(); // Assign non-null value or an empty list
+            }
+            else
+            {
+                // Handle the case where the request was not successful.
+                // For example, log the error or display a message to the user.
+            }
+        }
+    }
+
+    public class UserListData
+    {
+        public List<User>? Items { get; set; }
+    }
+
+    private void FilterActive()
+    {
+        DisplayedUsers = Users?.Where(u => u.IsActive).ToList() ?? new List<User>();
+    }
+
+    private void FilterNonActive()
+    {
+        DisplayedUsers = Users?.Where(u => !u.IsActive).ToList() ?? new List<User>();
+    }
+
+  
+    private Dictionary<long, bool> IsDropdownOpen = new Dictionary<long, bool>();
+
+    private void ToggleDropdown(long userId)
+    {
+
+        foreach (var key in IsDropdownOpen.Keys.ToList())
+        {
+            IsDropdownOpen[key] = false;
+        }
+        
+        IsDropdownOpen[userId] = true;
+    }
+
+    private void ViewUser(long userId)
+    {
+        // Implement logic to view user
+        Navigation.NavigateTo($"/users/view/{userId}");
+    }
+
+    private void AddUser()
+    {
+        // Implement logic to view user
+        Navigation.NavigateTo($"/users/add");
+    }
+
+    private void EditUser(long userId)
+    {
+        Navigation.NavigateTo($"/users/edit/{userId}");
+    }
+
+    private void DeleteUser(long userId)
+    {
+        // Implement logic to delete user
+           {
+        Navigation.NavigateTo($"/users/delete/{userId}");
+    }
+    }
+}

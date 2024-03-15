@@ -1,0 +1,74 @@
+@page "/users/view/{Id}"
+@using UserManagement.Models
+@using UserManagement.Client.Models
+@inject HttpClient HttpClient
+@using System.Text.Json
+<h2>User Details</h2>
+
+@if (User != null)
+{
+    <div>
+        <h3>User Information</h3>
+        <p><strong>Id:</strong> @User.Id</p>
+        <p><strong>Forename:</strong> @User.Forename</p>
+        <p><strong>Surname:</strong> @User.Surname</p>
+        <p><strong>Email:</strong> @User.Email</p>
+        <p><strong>Active:</strong> @(User.IsActive ? "Yes" : "No")</p>
+    </div>
+
+    @if (User.Logs != null && User.Logs.Any())
+    {
+        <div>
+            <h3>User Logs</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in User.Logs)
+                    {
+                        <tr>
+                            <td>@log.Action</td>
+                            <td>@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>No logs available for this user.</p>
+    }
+}
+else
+{
+    <p>User not found.</p>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private UserListItemViewModel? User;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch user details from the server using HttpClient or any other method
+        // For example:
+        var response = await HttpClient.GetAsync($"users/view/{Id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var userJson = await response.Content.ReadAsStringAsync();
+            User = JsonSerializer.Deserialize<UserListItemViewModel>(userJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        else
+        {
+            // Handle error if user is not found or request fails
+        }
+    }
+}
