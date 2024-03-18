@@ -65,6 +65,7 @@ else
         }
         else
         {
+            //go back to userlist if user doesn't exist
             Navigation.NavigateTo("/users/list");
         }
     }
@@ -87,7 +88,7 @@ else
                 }
                 else
                 {
-                    SubmitError = "An error occurred while saving the data. Please try again.";
+                    SubmitError = "An error occurred while deleting the data. Please try again.";
                 }
             }
             catch (Exception ex)

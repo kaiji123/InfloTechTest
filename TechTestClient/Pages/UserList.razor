@@ -8,6 +8,14 @@
 
 
 <h2>User List</h2>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@errorMessage</p>
+    </div>
+}
+
 @* Active buttons *@
 <div class="mb-3">
     <button class="btn btn-primary" @onclick="FilterActive">Active Users</button>
@@ -16,6 +24,9 @@
 
 @* Add user Button *@
 <button class="btn btn-primary" @onclick="AddUser">Add User</button> 
+
+
+
 
 
 @* User List *@
@@ -71,6 +82,8 @@ else
 }
 
 @code {
+
+    private string? errorMessage;
     private List<User>? Users;
     private List<User>? DisplayedUsers = new List<User>(); // List to display filtered users
 
@@ -93,8 +106,7 @@ else
             }
             else
             {
-                // Handle the case where the request was not successful.
-                // For example, log the error or display a message to the user.
+                errorMessage = "Failed to load users. Please try again later.";
             }
         }
     }

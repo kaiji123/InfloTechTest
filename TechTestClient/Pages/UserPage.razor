@@ -3,7 +3,18 @@
 @using UserManagement.Client.Models
 @inject HttpClient HttpClient
 @using System.Text.Json
+
+
+
 <h2>User Details</h2>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@errorMessage</p>
+    </div>
+}
+
 
 @if (User != null)
 {
@@ -52,6 +63,7 @@ else
 @code {
     [Parameter]
     public string? Id { get; set; }
+    private string? errorMessage;
 
     private UserListItemViewModel? User;
 
@@ -68,7 +80,8 @@ else
         }
         else
         {
-            // Handle error if user is not found or request fails
+            //handle error message
+            errorMessage = "Failed to load user. Please try again later.";
         }
     }
 }
